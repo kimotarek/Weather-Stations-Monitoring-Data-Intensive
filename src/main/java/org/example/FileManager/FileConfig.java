@@ -18,6 +18,7 @@ public class FileConfig {
     public static final String FILE_PREFIX = "file_";
 
     public static final String DB_DIRECTORY = "KV-db";
+    public static final String HINT_FILE="hint_file";
 
     public static final long FILE_MEMORY_THRESHOLD = 8000L;
 

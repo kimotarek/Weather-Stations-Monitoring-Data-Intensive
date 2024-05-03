@@ -6,13 +6,13 @@ public class Meta {
     private Long timeStamp;
     private int recordSize;
     private int recordPos;
-    File file;
+    Long fileId;
 
-    public Meta(Long timeStamp, int recordSize, int recordPos, File file) {
+    public Meta(Long timeStamp, int recordSize, int recordPos, Long fileId) {
         this.timeStamp = timeStamp;
         this.recordSize = recordSize;
         this.recordPos = recordPos;
-        this.file = file;
+        this.fileId = fileId;
     }
 
     public Long getTimeStamp() {
@@ -39,11 +39,11 @@ public class Meta {
         this.recordPos = recordPos;
     }
 
-    public File getFile() {
-        return file;
+    public Long getFileId() {
+        return fileId;
     }
 
-    public void setFile(File file) {
-        this.file = file;
+    public void setFileId(Long fileId) {
+        this.fileId = fileId;
     }
 }
