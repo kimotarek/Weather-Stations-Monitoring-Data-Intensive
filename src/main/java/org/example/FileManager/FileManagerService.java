@@ -8,6 +8,7 @@ import org.example.models.Record;
 
 import java.io.*;
 import java.util.HashMap;
+import java.util.Map;
 
 public class FileManagerService {
 
@@ -102,9 +103,9 @@ public class FileManagerService {
         }
         return offset;
     }
-    public void writeToHintFile(HashMap<String , Meta> keyDir){
+    public void writeToHintFile(Map<String , Meta> keyDir){
        String filePath= FileConfig.DB_DIRECTORY + "/" + FileConfig.HINT_FILE;
-        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath))) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath, false))) {
             oos.writeObject(keyDir);
         } catch (IOException e) {
             e.printStackTrace();
