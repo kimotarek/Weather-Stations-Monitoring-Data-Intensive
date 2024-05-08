@@ -7,7 +7,8 @@ import org.example.models.Meta;
 import org.example.models.Record;
 
 import java.io.*;
-import java.util.HashMap;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Map;
 
 public class FileManagerService {
@@ -15,10 +16,39 @@ public class FileManagerService {
     private File file;
    public FileManagerService() {
        createDir();
-       createFile();
+       getActiveFile();
    }
    public File getFile() {
        return file;
+   }
+    public File[] getSortedFiles(){
+        File directory = new File(FileConfig.DB_DIRECTORY);
+        File[] files = directory.listFiles((dir, name) -> !name.startsWith("hint_file_"));
+        // Sort files by timestamp
+        Arrays.sort(files, new Comparator<>() {
+            @Override
+            public int compare(File file1, File file2) {
+                long timestamp1 = extractTimestamp(file1.getName());
+                long timestamp2 = extractTimestamp(file2.getName());
+                return Long.compare(timestamp1, timestamp2);
+            }
+
+            private long extractTimestamp(String fileName) {
+                String[] parts = fileName.split("_");
+                return Long.parseLong(parts[1]);
+            }
+        });
+        return files;
+    }
+
+    private void getActiveFile(){
+       File[] files = getSortedFiles();
+         if(files.length==0){
+              createFile();
+         }
+         else{
+              file=files[files.length-1];
+         }
    }
 
     public void createDir(){
@@ -51,9 +81,9 @@ public class FileManagerService {
             System.out.println("Error occurred while creating file.");
         }
     }
-    public void createHintFile(){
+    public void createHintFile(Long fileId){
         try {
-            File file = new File(FileConfig.DB_DIRECTORY + "/" + FileConfig.HINT_FILE);
+            File file = new File(FileConfig.DB_DIRECTORY + "/" + FileConfig.HINT_FILE+fileId);
             if (file.createNewFile()) {
                 System.out.println("File created: " + file.getName());
             } else {
@@ -103,9 +133,31 @@ public class FileManagerService {
         }
         return offset;
     }
-    public void writeToHintFile(Map<String , Meta> keyDir){
-       String filePath= FileConfig.DB_DIRECTORY + "/" + FileConfig.HINT_FILE;
+    public String checkForHintFile(){
+        File directory = new File(FileConfig.DB_DIRECTORY);
+        File[] files = directory.listFiles();
+        if(files==null)
+            return null;
+        for(File file:files){
+            if(file.getName().contains(FileConfig.HINT_FILE)){
+                return file.getName();
+            }
+        }
+        return null;
+    }
+    public void writeToHintFile(Map<String , Meta> keyDir,Long fileId){
+       // delete the old hint file
+       String hintFileName=checkForHintFile();
+        if(hintFileName!=null){
+            File file = new File(FileConfig.DB_DIRECTORY + "/" + hintFileName);
+            file.delete();
+        }
+       // create a new hint file
+       createHintFile(fileId);
+       String filePath= FileConfig.DB_DIRECTORY + "/" + FileConfig.HINT_FILE+fileId;
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath, false))) {
+            // write keyDir size to the hint file
+            oos.writeInt(keyDir.size());
             oos.writeObject(keyDir);
         } catch (IOException e) {
             e.printStackTrace();

@@ -10,6 +10,9 @@ public class Header {
         this.keySize = keySize;
         this.valueSize = valueSize;
     }
+    public int getHeaderSize(){
+        return 16;
+    }
 
     public Long getTimeStamp() {
         return timeStamp;

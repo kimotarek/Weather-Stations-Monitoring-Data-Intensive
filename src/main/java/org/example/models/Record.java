@@ -10,7 +10,9 @@ public class Record {
         this.key = key;
         this.value = value;
     }
-
+public int getRecordSize(){
+        return header.getHeaderSize() + key.length() + value.length();
+    }
     public Header getHeader() {
         return header;
     }

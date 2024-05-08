@@ -1,8 +1,9 @@
 package org.example.models;
 
 import java.io.File;
+import java.io.Serializable;
 
-public class Meta {
+public class Meta implements Serializable {
     private Long timeStamp;
     private int recordSize;
     private int recordPos;
