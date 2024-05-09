@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+message weatherInformation{
+  int32 humidity=1;
+  int32 temperature=2;
+  int32 wind_speed=3;
+}
+message WeatherStatusMessage {
+  int64 station_id = 1;
+  string battery_status=2;
+  weatherInformation weatherInfo=3;
+  int64 s_no=4;
+  int64 status_timestamp=5;
+}
+
