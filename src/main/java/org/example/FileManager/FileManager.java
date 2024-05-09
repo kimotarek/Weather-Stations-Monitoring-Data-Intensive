@@ -2,47 +2,30 @@ package org.example.FileManager;
 
 import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
+import org.example.Storage.StorageUtil;
 import org.example.models.Header;
 import org.example.models.Meta;
 import org.example.models.Record;
 
 import java.io.*;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Map;
 
-public class FileManagerService {
+public class FileManager {
 
     private File file;
-   public FileManagerService() {
+    private final StorageUtil storageUtil;
+   public FileManager() {
+         this.storageUtil = new StorageUtil();
        createDir();
        getActiveFile();
    }
    public File getFile() {
        return file;
    }
-    public File[] getSortedFiles(){
-        File directory = new File(FileConfig.DB_DIRECTORY);
-        File[] files = directory.listFiles((dir, name) -> !name.startsWith("hint_file_"));
-        // Sort files by timestamp
-        Arrays.sort(files, new Comparator<>() {
-            @Override
-            public int compare(File file1, File file2) {
-                long timestamp1 = extractTimestamp(file1.getName());
-                long timestamp2 = extractTimestamp(file2.getName());
-                return Long.compare(timestamp1, timestamp2);
-            }
 
-            private long extractTimestamp(String fileName) {
-                String[] parts = fileName.split("_");
-                return Long.parseLong(parts[1]);
-            }
-        });
-        return files;
-    }
 
     private void getActiveFile(){
-       File[] files = getSortedFiles();
+       File[] files = storageUtil.getSortedFiles();
          if(files.length==0){
               createFile();
          }
@@ -160,7 +143,7 @@ public class FileManagerService {
             oos.writeInt(keyDir.size());
             oos.writeObject(keyDir);
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Error occurred while writing to hint file.");
         }
     }
 
@@ -194,16 +177,12 @@ public class FileManagerService {
         byte[] buffer = new byte[size];
         try {
             String filePath= FileConfig.DB_DIRECTORY + "/" + FileConfig.FILE_PREFIX+fileId;
-            // Open the file in read-only mode
             RandomAccessFile randomAccessFile = new RandomAccessFile(filePath, "r");
-            // Move to the specified position in the file
             randomAccessFile.seek(pos);
-            int bytesRead = randomAccessFile.read(buffer);
-            // Close the file
+            randomAccessFile.read(buffer);
             randomAccessFile.close();
         } catch (IOException e) {
             System.out.println("An error occurred: " + e.getMessage());
-            e.printStackTrace();
         }
         return buffer;
 

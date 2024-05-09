@@ -1,9 +1,8 @@
 package org.example.Storage;
 
 import com.google.common.primitives.Ints;
-import com.google.common.primitives.Longs;
 import org.example.FileManager.FileConfig;
-import org.example.FileManager.FileManagerService;
+import org.example.FileManager.FileManager;
 import org.example.models.Header;
 import org.example.models.Meta;
 import org.example.models.Pair;
@@ -21,14 +20,16 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 @Service
-public class KVService {
+public class KVImpl {
     Map<String, Meta> keyDir;
-  FileManagerService fileManagerService;
+  FileManager fileManager;
+  StorageUtil storageUtil;
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
-    public KVService() {
+    public KVImpl() {
         this.keyDir = new HashMap<>();
-        this.fileManagerService = new FileManagerService();
+        this.fileManager = new FileManager();
+        this.storageUtil = new StorageUtil();
     }
     public Map<String, Meta> getKeyDir() {
         return keyDir;
@@ -46,9 +47,10 @@ public class KVService {
         int recordSize= 16+
                 key.length()+
                 value.length();
-        int recordPos= fileManagerService.writeToFile(record,fileManagerService.getFile());
-       String fileName= fileManagerService.getFile().getName();
-        Meta meta = new Meta(System.currentTimeMillis(), recordSize,recordPos, extractFileId(fileName));
+        int recordPos= fileManager.writeToFile(record, fileManager.getFile());
+       String fileName= fileManager.getFile().getName();
+        Meta meta = new Meta(System.currentTimeMillis(), recordSize,recordPos,
+                storageUtil.extractFileId(fileName));
         boolean success= lock.writeLock().tryLock();
         if(!success){
             System.out.println("Failed to acquire lock.");
@@ -65,7 +67,7 @@ public class KVService {
     public void putMergedRecord(String key,String value,Long timeStamp,File file){
         Header header = new Header(timeStamp, key.length(), value.length());
         Record record = new Record(header, key, value);
-        int recordPos= fileManagerService.writeToFile(record,file);
+        int recordPos= fileManager.writeToFile(record,file);
     }
 
     public String getRecord(String key){
@@ -79,7 +81,7 @@ public class KVService {
      } finally {
          lock.readLock().unlock();
      }
-     byte[] record= fileManagerService.readRandom(meta.getFileId(), meta.getRecordPos(), meta.getRecordSize());
+     byte[] record= fileManager.readRandom(meta.getFileId(), meta.getRecordPos(), meta.getRecordSize());
      byte[] dest =new byte[FileConfig.VALUE_SIZE_LENGTH];
      System.arraycopy(record, FileConfig.VALUE_SIZE_OFFSET, dest, 0, FileConfig.VALUE_SIZE_LENGTH);
      int valueSize= Ints.fromByteArray(dest);
@@ -88,87 +90,25 @@ public class KVService {
      return new String(dest);
     }
 
-    public File[] getSortedFiles(){
-        File directory = new File(FileConfig.DB_DIRECTORY);
-        File[] files = directory.listFiles((dir, name) -> !name.startsWith("hint_file_"));
 
-        // Sort files by timestamp
-        Arrays.sort(files, new Comparator<>() {
-            @Override
-            public int compare(File file1, File file2) {
-                long timestamp1 = extractTimestamp(file1.getName());
-                long timestamp2 = extractTimestamp(file2.getName());
-                return Long.compare(timestamp1, timestamp2);
-            }
-
-            private long extractTimestamp(String fileName) {
-                String[] parts = fileName.split("_");
-                return Long.parseLong(parts[1]);
-            }
-        });
-        return files;
-    }
-
-    public void getKVFromFile(File file,HashMap<String, Pair<String,Long>> mergeMap){
-
-        try {
-           byte[] bytesArray = new byte[(int) file.length()];
-           FileInputStream fis = new FileInputStream(file);
-           int byteRead= fis.read(bytesArray);
-
-              int offset=0;
-              while(offset<byteRead){
-                    Record record= parseRecord(bytesArray,offset);
-                    offset+=record.getRecordSize();
-                    mergeMap.put(record.getKey(),new Pair<>(record.getValue(),record.getHeader().getTimeStamp()));
-              }
-        }
-        catch (IOException e){
-            System.out.println("Error occurred while reading file.");
-        }
-    }
-    private Record parseRecord(byte[] bytesArray,int offset)
-    {   byte[] dest =new byte[FileConfig.TIMESTAMP_LENGTH];
-        System.arraycopy(bytesArray, offset, dest, 0, FileConfig.TIMESTAMP_LENGTH);
-        Long timestamp= Longs.fromByteArray(dest);
-        offset+=FileConfig.TIMESTAMP_LENGTH;
-        dest =new byte[FileConfig.KEY_SIZE_LENGTH];
-        System.arraycopy(bytesArray, offset, dest, 0, FileConfig.KEY_SIZE_LENGTH);
-        int keySize= Ints.fromByteArray(dest);
-        offset+=FileConfig.KEY_SIZE_LENGTH;
-        dest =new byte[FileConfig.VALUE_SIZE_LENGTH];
-        System.arraycopy(bytesArray, offset, dest, 0, FileConfig.VALUE_SIZE_LENGTH);
-        int valueSize= Ints.fromByteArray(dest);
-        offset+=FileConfig.VALUE_SIZE_LENGTH;
-        dest =new byte[keySize];
-        System.arraycopy(bytesArray, offset, dest, 0, keySize);
-        String key= new String(dest);
-        offset+=keySize;
-        dest =new byte[valueSize];
-        System.arraycopy(bytesArray, offset, dest, 0, valueSize);
-        String value= new String(dest);
-        offset+=valueSize;
-
-        return new Record(new Header(timestamp,keySize,valueSize),key,value);
-    }
 
     public  void mergeFiles() {
         try {
             System.out.println("Compaction started.");
-            File[] files = getSortedFiles();
+            File[] files = storageUtil.getSortedFiles();
             System.out.println("Files to be merged: " + Arrays.toString(files));
             files = Arrays.copyOfRange(files, 0, files.length - 1);
             System.out.println("Files to be merged: " + Arrays.toString(files));
-            Long lastFileId = extractFileId(files[files.length - 1].getName());
+            Long lastFileId = storageUtil.extractFileId(files[files.length - 1].getName());
             if (files.length < 2) {
                 System.out.println("No files to merge.");
                 return;
             }
             HashMap<String, Pair<String, Long>> mergeMap = new HashMap<>();
             for (File file : files) {
-                getKVFromFile(file, mergeMap);
+                storageUtil.getKVFromFile(file, mergeMap);
             }
-            File mergedFile = fileManagerService.createCompactFile();
+            File mergedFile = fileManager.createCompactFile();
             System.out.println("Merged file created.");
             for (Map.Entry<String, Pair<String, Long>> entry : mergeMap.entrySet()) {
                 Pair<String, Long> pair = entry.getValue();
@@ -184,7 +124,7 @@ public class KVService {
                     Pair<String, Long> pair = entry.getValue();
                     Meta meta = keyDir.get(key);
                     if (keyDir.containsKey(key) && Objects.equals(meta.getTimeStamp(), pair.getSecond())) {
-                        meta.setFileId(extractFileId(mergedFile.getName()));
+                        meta.setFileId(storageUtil.extractFileId(mergedFile.getName()));
                         keyDir.put(key, meta);
                     }
                 }
@@ -203,7 +143,7 @@ public class KVService {
             mergedFile.renameTo(new File(FileConfig.DB_DIRECTORY + "/" + FileConfig.FILE_PREFIX + lastFileId));
 
             // write to the hint file
-            fileManagerService.writeToHintFile(keyDir, lastFileId);
+            fileManager.writeToHintFile(keyDir, lastFileId);
             System.out.println("Hint file updated.");
         }
         catch (Exception e){
@@ -213,7 +153,7 @@ public class KVService {
 
     }
     private Boolean rebuildFromHintFile(){
-        String hintFileName= fileManagerService.checkForHintFile();
+        String hintFileName= fileManager.checkForHintFile();
         if(hintFileName==null){
             return false;
         }
@@ -234,15 +174,15 @@ public class KVService {
             File directory = new File(FileConfig.DB_DIRECTORY);
             File[] files = directory.listFiles((dir, name) -> !name.startsWith("hint_file_"));
             for (File file:files){
-               if(extractFileId(file.getName())>extractHintFileId(hintFile.getName())){
+               if(storageUtil.extractFileId(file.getName())> storageUtil.extractHintFileId(hintFile.getName())){
                    byte[] bytesArray = new byte[(int) file.length()];
                    FileInputStream fis1 = new FileInputStream(file);
                    int byteRead = fis1.read(bytesArray);
 
                    int offset = 0;
                    while (offset < byteRead) {
-                       Record record = parseRecord(bytesArray, offset);
-                       Meta meta = new Meta(record.getHeader().getTimeStamp(), record.getRecordSize(), offset, extractFileId(file.getName()));
+                       Record record = storageUtil.parseRecord(bytesArray, offset);
+                       Meta meta = new Meta(record.getHeader().getTimeStamp(), record.getRecordSize(), offset, storageUtil.extractFileId(file.getName()));
                        keyDir.put(record.getKey(), meta);
                        offset += record.getRecordSize();
                    }
@@ -256,7 +196,7 @@ public class KVService {
 
     }
     private void rebuildFromOriginalFiles(){
-        File[] files = getSortedFiles();
+        File[] files = storageUtil.getSortedFiles();
         for(File file:files) {
             try {
                 byte[] bytesArray = new byte[(int) file.length()];
@@ -265,8 +205,8 @@ public class KVService {
 
                 int offset = 0;
                 while (offset < byteRead) {
-                    Record record = parseRecord(bytesArray, offset);
-                    Meta meta = new Meta(record.getHeader().getTimeStamp(), record.getRecordSize(), offset, extractFileId(file.getName()));
+                    Record record = storageUtil.parseRecord(bytesArray, offset);
+                    Meta meta = new Meta(record.getHeader().getTimeStamp(), record.getRecordSize(), offset, storageUtil.extractFileId(file.getName()));
                     keyDir.put(record.getKey(), meta);
                     offset += record.getRecordSize();
                 }
@@ -285,13 +225,6 @@ public class KVService {
         rebuildFromOriginalFiles();
         System.out.println("Rebuild from original files successful.");
     }
-    private Long extractFileId(String fileName) {
-        String[] parts = fileName.split("_");
-        return Long.parseLong(parts[1]);
-    }
-    private Long extractHintFileId(String fileName) {
-        String[] parts = fileName.split("_");
-        return Long.parseLong(parts[2]);
-    }
+
     }
 

@@ -1,11 +1,8 @@
 package org.example.FileManager;
 
 public class FileConfig {
-    public static final int TIMESTAMP_OFFSET = 0;
 
     public static final int TIMESTAMP_LENGTH = 8;
-
-    public static final int KEY_SIZE_OFFSET = 8;
 
     public static final int KEY_SIZE_LENGTH = 4;
 
@@ -18,6 +15,7 @@ public class FileConfig {
     public static final String FILE_PREFIX = "file_";
 
     public static final String DB_DIRECTORY = "KV-db";
+
     public static final String HINT_FILE="hint_file_";
 
     public static final long FILE_MEMORY_THRESHOLD = 8000L;
