@@ -1,24 +1,17 @@
-package org.example.WeatherKafkaUsingProtobufService;
+package org.example.WeatherKafkaUsingJSONOrProtobufService;
 
 import io.confluent.kafka.serializers.protobuf.KafkaProtobufDeserializer;
-import io.confluent.kafka.serializers.protobuf.KafkaProtobufSerializer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.Producer;
-import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringDeserializer;
-import org.apache.kafka.common.serialization.StringSerializer;
 import org.example.WeatherData.MessageCreator;
-import proto.MyRecordOuterClass;
 import proto.WeatherStatusMessageOuterClass;
 
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Properties;
 
-public class KafkaConsumer {
+public class KafkaConsumerProto {
 
     Properties properties = new Properties();
     MessageCreator messageCreator=new MessageCreator();
@@ -56,7 +49,7 @@ public class KafkaConsumer {
 
     public static void main(String[] args) {
 
-        KafkaConsumer consumer=new KafkaConsumer();
+        KafkaConsumerProto consumer=new KafkaConsumerProto();
         consumer.receiveMessages();
 
     }

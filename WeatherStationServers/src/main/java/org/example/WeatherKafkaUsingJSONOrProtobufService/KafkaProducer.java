@@ -1,4 +1,4 @@
-package org.example.WeatherKafkaUsingProtobufService;
+package org.example.WeatherKafkaUsingJSONOrProtobufService;
 
 import io.confluent.kafka.serializers.protobuf.KafkaProtobufSerializer;
 import org.apache.kafka.clients.producer.Producer;
@@ -19,11 +19,12 @@ public class KafkaProducer {
         properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaProtobufSerializer.class.getName());
+
         properties.put("schema.registry.url", "http://localhost:8081");
     }
 
 
-    public void sendMessage(){
+    public void sendMessageProto(){
 
         this.setUp();
         Producer<String, WeatherStatusMessageOuterClass.WeatherStatusMessage> producer = new org.apache.kafka.clients.producer.KafkaProducer<>(properties);
@@ -32,7 +33,7 @@ public class KafkaProducer {
             String topic = "WeatherStatusMessages";
             String key = "WeatherKey";
 
-            WeatherStatusMessageOuterClass.WeatherStatusMessage weatherRecord = messageCreator.CreateWeatherStatusMessage();
+            WeatherStatusMessageOuterClass.WeatherStatusMessage weatherRecord = messageCreator.CreateWeatherStatusMessageProto();
             if(weatherRecord == null) return;
 
             ProducerRecord<String,  WeatherStatusMessageOuterClass.WeatherStatusMessage> producerRecord = new ProducerRecord<>(topic, key, weatherRecord);
@@ -40,7 +41,9 @@ public class KafkaProducer {
 
             System.out.println(weatherRecord.toString());
             producer.send(producerRecord).get();
+            producer.flush();
             producer.close();
+
 
         } catch (Exception e) {
             // Handle interruption exception
@@ -52,5 +55,37 @@ public class KafkaProducer {
 
     }
 
+
+    public void sendMessageJsonString(){
+
+        Properties props = new Properties();
+        props.put("bootstrap.servers", "localhost:9092");
+        props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+        props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+
+        Producer<String, String> producer = new org.apache.kafka.clients.producer.KafkaProducer<>(props);
+        try {
+
+            String topic = "WeatherStatusMessages";
+
+            String weatherRecord = messageCreator.CreateWeatherStatusMessageJSON();
+            if(weatherRecord == null) return;
+
+            ProducerRecord<String, String> record = new ProducerRecord<>(topic, weatherRecord);
+
+            System.out.println(weatherRecord);
+            producer.send(record);
+            producer.flush();
+            producer.close();
+
+        } catch (Exception e) {
+            // Handle interruption exception
+            e.printStackTrace();
+        }finally {
+            producer.flush();
+            producer.close();
+        }
+
+    }
 
 }

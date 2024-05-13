@@ -1,15 +1,15 @@
 package org.example;
 
-import org.example.WeatherKafkaUsingProtobufService.KafkaProducer;
+import org.example.WeatherKafkaUsingJSONOrProtobufService.KafkaProducer;
 
 public class Main {
     public static void main(String[] args) {
         KafkaProducer kafkaProducer = new KafkaProducer();
+
         System.out.println("ss");
-        System.out.println("aa");
 
         while (true) {
-            kafkaProducer.sendMessage();
+            kafkaProducer.sendMessageJsonString();
 
             try {
                 // Sleep for 1 second (1000 milliseconds)

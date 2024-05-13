@@ -56,6 +56,7 @@
         </dependency>
 
 
+
         <!-- Avro dependencies -->
         <dependency>
             <groupId>org.apache.avro</groupId>
@@ -106,6 +107,33 @@
             <artifactId>kafka-protobuf-serializer</artifactId>
             <version>5.5.1</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-streams</artifactId>
+            <version>3.5.2</version>
+        </dependency>
+
+<!--        &lt;!&ndash; https://mvnrepository.com/artifact/io.confluent/kafka-streams-protobuf-serde &ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>io.confluent</groupId>-->
+<!--            <artifactId>kafka-streams-protobuf-serde</artifactId>-->
+<!--            <version>7.5.3</version> &lt;!&ndash; Replace with the latest version &ndash;&gt;-->
+<!--        </dependency>-->
+
+        <!-- https://mvnrepository.com/artifact/io.confluent/kafka-streams-protobuf-serde -->
+        <dependency>
+            <groupId>io.confluent</groupId>
+            <artifactId>kafka-streams-protobuf-serde</artifactId>
+            <version>7.3.7</version>
+        </dependency>
+
+
+
+
+
+
+
+
 
 
 

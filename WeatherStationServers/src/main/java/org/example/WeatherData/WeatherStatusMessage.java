@@ -7,7 +7,7 @@ import lombok.ToString;
 @ToString
 public class WeatherStatusMessage {
 
-    long station_id;
+    int station_id;
     long s_no;
     String battery_status;
     long status_timestamp;
