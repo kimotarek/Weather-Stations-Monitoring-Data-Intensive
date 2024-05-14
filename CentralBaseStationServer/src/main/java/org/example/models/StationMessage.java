@@ -1,18 +1,19 @@
 package org.example.models;
+import lombok.NoArgsConstructor;
 import org.apache.avro.Schema;
-
+@NoArgsConstructor
 public class StationMessage {
-    int Station_ID;
-    int S_No;
-    String Battery_Status;
-    long Status_Timestamp;
+    int stationID;
+    int sNo;
+    String batteryStatus;
+    long statusTimestamp;
     Weather weather;
 
-    public StationMessage(int Station_ID, int S_No, String Battery_Status, long Status_Timestamp, Weather weather) {
-        this.Station_ID = Station_ID;
-        this.S_No = S_No;
-        this.Battery_Status = Battery_Status;
-        this.Status_Timestamp = Status_Timestamp;
+    public StationMessage(int stationID, int sNo, String batteryStatus, long statusTimestamp, Weather weather) {
+        this.stationID = stationID;
+        this.sNo = sNo;
+        this.batteryStatus = batteryStatus;
+        this.statusTimestamp = statusTimestamp;
         this.weather = weather;
     }
 
@@ -33,20 +34,20 @@ public class StationMessage {
     }
 
 
-    public int getStation_ID(){
-        return Station_ID;
+    public int getStationID(){
+        return stationID;
     }
 
-    public int getS_No(){
-        return S_No;
+    public int getsNo(){
+        return sNo;
     }
     
-    public String getBattery_Status(){
-        return Battery_Status;
+    public String getBatteryStatus(){
+        return batteryStatus;
     }
     
-    public long getStatus_Timestamp(){
-        return Status_Timestamp;
+    public long getStatusTimestamp(){
+        return statusTimestamp;
     }
 
     public Weather getWeather(){

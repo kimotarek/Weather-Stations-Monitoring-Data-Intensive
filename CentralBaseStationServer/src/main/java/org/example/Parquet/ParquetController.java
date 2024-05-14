@@ -5,6 +5,7 @@ import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 import org.example.models.StationMessage;
+import org.example.models.Weather;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -33,11 +34,11 @@ public class ParquetController extends Thread {
     public void AddToParquet(StationMessage message) {
         // Create a Row using RowFactory
         Row record = RowFactory.create(
-                message.getStation_ID(),
-                message.getS_No(),
-                message.getBattery_Status(),
-                message.getStatus_Timestamp(),
-                RowFactory.create(message.getWeather().getHumidity(), message.getWeather().getTemprature(), message.getWeather().getWind_Speed())
+                message.getStationID(),
+                message.getsNo(),
+                message.getBatteryStatus(),
+                message.getStatusTimestamp(),
+                RowFactory.create(message.getWeather().getHumidity(), message.getWeather().getTemperature(), message.getWeather().getWindSpeed())
         );
         Records.add(record);
 
@@ -91,13 +92,7 @@ public class ParquetController extends Thread {
         }
     }
 
-    public void ReadParquet() {
-        SparkSession ss = SparkSession.builder().appName("Reader").master("local").getOrCreate();
-        String path = String.valueOf(Paths.get("").toAbsolutePath()) + "/Data/Station_ID=1/Status_Timestamp_Ranges=Range1/" + "part-00000-604d6ad0-fac3-4b68-84a1-6b023bd5a998.c000.snappy.parquet";
-        Dataset<Row> ds = ss.read().parquet(path);
 
-        ds.printSchema();
-        ds.show(false);
-    }
+
 
 }

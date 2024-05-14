@@ -1,16 +1,17 @@
 package org.example.models;
 
+import lombok.NoArgsConstructor;
 import org.apache.avro.Schema;
-
+@NoArgsConstructor
 public class Weather {
-    int Humidity;
-    int Temprature;
-    int Wind_Speed;
+    int humidity;
+    int temperature;
+    int windSpeed;
 
-    public Weather(int Humidity, int Temprature, int Wind_Speed) {
-        this.Humidity = Humidity;
-        this.Temprature = Temprature;
-        this.Wind_Speed = Wind_Speed;
+    public Weather(int Humidity, int temperature, int windSpeed) {
+        this.humidity = Humidity;
+        this.temperature = temperature;
+        this.windSpeed = windSpeed;
     }
 
 
@@ -26,16 +27,16 @@ public class Weather {
     }
 
     public int getHumidity(){
-        return Humidity;
+        return humidity;
     }
 
 
-    public int getTemprature(){
-        return Temprature;
+    public int getTemperature(){
+        return temperature;
     }
 
-    public int getWind_Speed(){
-        return Wind_Speed;
+    public int getWindSpeed(){
+        return windSpeed;
     }
 
 }
