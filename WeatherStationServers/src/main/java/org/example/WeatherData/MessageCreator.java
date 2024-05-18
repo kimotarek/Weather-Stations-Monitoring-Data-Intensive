@@ -2,12 +2,13 @@ package org.example.WeatherData;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
-import proto.MyRecordOuterClass;
+
 import proto.WeatherStatusMessageOuterClass;
 
 import java.util.Random;
 
 public class MessageCreator {
+
 
     private static final Random random = new Random();
     private static long st_message_proto = 1;
@@ -49,11 +50,11 @@ public class MessageCreator {
         return info;
     }
 
-    public String CreateWeatherStatusMessageJSON(){
+    public String CreateWeatherStatusMessageJSON(int stationId){
 
         WeatherStatusMessage weatherMessage=new WeatherStatusMessage();
 
-        weatherMessage.setStation_id(1);
+        weatherMessage.setStation_id(stationId);
         weatherMessage.setBattery_status(generateBatteryStatus());
         weatherMessage.setS_no(st_message_Json++);
         weatherMessage.setStatus_timestamp(System.currentTimeMillis() / 1000L);

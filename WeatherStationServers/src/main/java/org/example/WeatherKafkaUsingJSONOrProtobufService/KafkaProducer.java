@@ -56,7 +56,7 @@ public class KafkaProducer {
     }
 
 
-    public void sendMessageJsonString(){
+    public void sendMessageJsonString(int stationId){
 
         Properties props = new Properties();
         props.put("bootstrap.servers", "localhost:9092");
@@ -68,7 +68,7 @@ public class KafkaProducer {
 
             String topic = "WeatherStatusMessages";
 
-            String weatherRecord = messageCreator.CreateWeatherStatusMessageJSON();
+            String weatherRecord = messageCreator.CreateWeatherStatusMessageJSON(stationId);
             if(weatherRecord == null) return;
 
             ProducerRecord<String, String> record = new ProducerRecord<>(topic, weatherRecord);
