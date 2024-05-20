@@ -80,7 +80,7 @@ private  transient ElasticsearchClient client;
         IndexRequest.Builder<StationMessage> indexReqBuilder = new IndexRequest.Builder<>();
 
         indexReqBuilder.index("weather_station_index");
-        indexReqBuilder.id(String.valueOf(stationMessage.getStationID()+"_"+stationMessage.getStatusTimestamp()));
+        indexReqBuilder.id(String.valueOf(stationMessage.getStationID()+"_"+stationMessage.getsNo()));
         indexReqBuilder.document(stationMessage);
         IndexRequest<StationMessage> indexRequest = indexReqBuilder.build();
 
