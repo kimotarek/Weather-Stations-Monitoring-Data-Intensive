@@ -1,0 +1,17 @@
+# Use official Java 11 image as base image
+FROM openjdk:22
+
+# Set working directory in the container
+WORKDIR /WeatherStationServers
+
+# Copy the rest of the source code to the container
+COPY . .
+
+# Download all the dependencies for the project
+#RUN mvn dependency:go-offline -B
+#
+## Build the project
+#RUN mvn clean install
+
+# Start the application
+CMD java -jar out/artifacts/WeatherStation_jar/WeatherStation.jar

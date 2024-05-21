@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: weather-station9
+spec:
+  selector:
+    app: weather-station9
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8090
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: weather-station9
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: weather-station9
+  template:
+    metadata:
+      labels:
+        app: weather-station9
+    spec:
+      containers:
+        - name: weather-station9
+          image: mado2002/weather_station_server:v2
+          env:
+            - name: ID
+              value: "9"
+            - name: KAFKA_SERVER
+              value: "kafka-service:9092"
+          ports:
+            - containerPort: 8090

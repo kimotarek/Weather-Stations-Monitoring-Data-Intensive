@@ -77,9 +77,11 @@ public class KafkaProducer {
             producer.send(record);
             producer.flush();
             producer.close();
+            System.out.println("Done");
 
         } catch (Exception e) {
             // Handle interruption exception
+            System.out.println("ERROR With kafka");
             e.printStackTrace();
         }finally {
             producer.flush();

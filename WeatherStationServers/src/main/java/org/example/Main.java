@@ -15,6 +15,7 @@ public class Main {
             } catch (InterruptedException e) {
                 // Handle interruption exception
                 e.printStackTrace();
+                System.out.println("Error main");
             }
         }
     }
